@@ -10,6 +10,7 @@
             --primary: #00b195;
             --secondary: #fc2537;
             --background: #07080b;
+            --warning: #fc2537;
         }
 
         /* 加载状态样式 */
@@ -25,7 +26,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 3000;
             gap: 2rem;
         }
 
@@ -208,6 +209,40 @@
             top: -1.5rem;
         }
         .key:hover { background: var(--primary); color: var(--background); }
+        /* 语音包提示弹窗样式 */
+        .voice-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(7,8,11,0.95);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 2rem;
+            font-family: 'Kiineza', monospace;
+        }
+        .voice-prompt {
+            background: #131318;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 90vw;
+            color: white;
+            font-size: 2.2rem;
+            line-height: 1.2;
+            font-family: 'Kiineza', monospace;
+            color: var(--warning);
+        }
+        .voice-prompt button {
+            margin-top: 1rem;
+            background: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kiineza', monospace;
+        }
     </style>
 </head>
 <body>
@@ -219,6 +254,14 @@
     <button class="read-button" id="readBtn">🗣️</button>
     <input type="text" id="display" class="display-box" maxlength="80" placeholder="lO sivOxis/u maz/e vOz/ot/i...">
     <div id="keyboard" class="keyboard"></div>
+    <!-- 语音提示弹窗 -->
+    <div id="voiceOverlay" class="voice-overlay">
+        <div class="voice-prompt">
+            <p>❌vOsut❌</p>
+            <p>lO tigAxun/a masIn/u 🖥️ s/ot/i.</p>
+            <button id="voiceDismiss">mal/o kak/u n/og/i.</button>
+        </div>
+    </div>
 <script>
 
 
@@ -394,7 +437,7 @@ function speakSentence() {
     const kanaWords = words.map(w => toKana(w));
     const joined = kanaWords.join('；');
     const utter = new SpeechSynthesisUtterance(joined);
-    utter.lang='ja-JP'; utter.rate=1; utter.pitch=1;
+    utter.lang='ja-JP'; utter.rate=1; utter.pitch=1;utter.volume = 8;
     speechSynthesis.speak(utter);
     // 不修改显示内容，保留半角标点
 }
@@ -403,12 +446,32 @@ window.addEventListener('DOMContentLoaded', () => {
     initKeyboard();
     checkFontLoaded();
     display.focus();
+
+    // 如果页面加载时已有 voices，则立即隐藏 overlay
+    if (speechSynthesis.getVoices().length > 0) {
+        document.getElementById('voiceOverlay').style.display = 'none';
+    }
+
+
+
     display.addEventListener('mousedown', e => {
         e.preventDefault(); // 阻止默认点击行为
         display.focus();
         display.setSelectionRange(display.value.length, display.value.length);
     });
     document.getElementById('readBtn').addEventListener('click', speakSentence);
+    
+   // 点击“我知道了”按钮关闭提示
+    document.getElementById('voiceDismiss').addEventListener('click', () => {
+        document.getElementById('voiceOverlay').style.display = 'none';
+    });
+
+    // 监听 voiceschanged 事件，一旦有语音包则隐藏 overlay
+    speechSynthesis.onvoiceschanged = () => {
+        if (speechSynthesis.getVoices().length > 0) {
+            document.getElementById('voiceOverlay').style.display = 'none';
+        }
+    };
 });
 </script>
 </body>
