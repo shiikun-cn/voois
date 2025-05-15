@@ -463,7 +463,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
    // 点击“我知道了”按钮关闭提示
     document.getElementById('voiceDismiss').addEventListener('click', () => {
-        document.getElementById('voiceOverlay').style.display = 'none';
+        location.reload(); 
     });
 
     // 监听 voiceschanged 事件，一旦有语音包则隐藏 overlay
